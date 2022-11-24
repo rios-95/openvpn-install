@@ -613,6 +613,7 @@ function installQuestions() {
 function installOpenVPN() {
 	if [[ $AUTO_INSTALL == "y" ]]; then
 		# Set default choices so that no questions will be asked.
+		# Example: sudo PUBLIC_IP=myserver.com AUTO_INSTALL=y CC_CIPHER_CHOICE=2 ./openvpn-install.sh
 		APPROVE_INSTALL=${APPROVE_INSTALL:-y}
 		APPROVE_IP=${APPROVE_IP:-y}
 		IPV6_SUPPORT=${IPV6_SUPPORT:-n}
@@ -624,12 +625,15 @@ function installOpenVPN() {
 		CLIENT=${CLIENT:-client}
 		PASS=${PASS:-1}
 		CONTINUE=${CONTINUE:-y}
+		PUBLIC_IP=${PUBLIC_IP}
 
 		# Behind NAT, we'll default to the publicly reachable IPv4/IPv6.
-		if [[ $IPV6_SUPPORT == "y" ]]; then
-			PUBLIC_IP=$(curl --retry 5 --retry-connrefused https://ifconfig.co)
-		else
-			PUBLIC_IP=$(curl --retry 5 --retry-connrefused -4 https://ifconfig.co)
+		if [[ -z $PUBLIC_IP ]]; then
+			if [[ $IPV6_SUPPORT == "y" ]]; then
+				PUBLIC_IP=$(curl --retry 5 --retry-connrefused https://api.ipify.org)
+			else
+				PUBLIC_IP=$(curl --retry 5 --retry-connrefused -4 https://api.ipify.org)
+			fi
 		fi
 		ENDPOINT=${ENDPOINT:-$PUBLIC_IP}
 	fi
